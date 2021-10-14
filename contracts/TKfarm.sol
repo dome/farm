@@ -279,7 +279,6 @@ contract TKFarm is Ownable {
             );
         safeSushiTransfer(msg.sender, pool.sushi, pending);
         user.rewardDebt = user.amount.mul(pool.accSushiPerShare).div(1e12);
-        safeSushiTransfer(to, pool.sushi, pending);
 
         emit Harvest(msg.sender, _pid, pending);
     }
