@@ -270,15 +270,18 @@ contract TKFarm is Ownable {
     /// @param _pid The index of the pool. See `poolInfo`.
     /// @param to Receiver of SUSHI rewards.
     function harvest(uint256 _pid, address to) public {
-        PoolInfo storage pool = poolInfo[_pid];
+        updatePool(_pid);        
+        PoolInfo memory pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
-        updatePool(_pid);
-        uint256 pending =
-            user.amount.mul(pool.accSushiPerShare).div(1e12).sub(
-                user.rewardDebt
-            );
-        safeSushiTransfer(to, pool.sushi, pending);
-        user.rewardDebt = user.amount.mul(pool.accSushiPerShare).div(1e12);
+
+        uint256 accumulated = user.amount.mul(pool.accSushiPerShare).div(1e12);
+        uint256 pending = accumulated.sub(user.rewardDebt);
+
+        user.rewardDebt = accumulated;
+
+        if (pending != 0) {
+            safeSushiTransfer(to, pool.sushi, pending);
+        }
 
         emit Harvest(msg.sender, _pid, pending);
     }
